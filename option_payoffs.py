@@ -193,7 +193,7 @@ if __name__ == "__main__":
     call_example()
     put_example()
 
-    put_debit_spread_example()6
+    put_debit_spread_example()
     put_credit_spread_example()
 
     call_debit_spread_example()
