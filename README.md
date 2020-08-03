@@ -24,5 +24,13 @@ long_call_option_payoff = op.call_option(underlying_price, strike_price_long_cal
 
 ![alt text](https://github.com/MichaelGaidas/OptionPayoffs/blob/master/strangle_img.JPG)
 
+## Additional Info / Help
+This code is written to be adapted as much as possible. You can most definitely implement other strategies (or your own) using the current code.
+
+Plotting is off for the spreads, strangles/straddles, and the iron condor by default to not overcomplicate things. If you want to see the individual plots of each component of a spread, you can set plot=True for all of the call or put options in option_payoffs.py.
+
+Example: For the call_credit_or_debit_spread, you can set the last parameter (plot) of the short and long call and it will graph each independently. 
+
 ## Contributing
 Please feel free to pull and make any changes you want. This project is in progress, there may be quite a bit of bugs.
+Also, feel free to email me or tell me if I am doing something idiotic or if you have any suggestions.
