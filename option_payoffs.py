@@ -30,9 +30,17 @@ def create_plot(net_payoff_list, stock_price_range, title, max_gain=0, max_loss=
     plt.show()
 
 
-def spread_gains(strike_price_long, premium_long, strike_price_short, premium_short, credit=True):
-    max_gain = abs((premium_short - premium_long) * 100) if credit else (abs(strike_price_long - strike_price_short) - abs(premium_short - premium_long)) * 100
-    max_loss = (abs(strike_price_long - strike_price_short) - abs(premium_short - premium_long)) * 100 if credit else abs((premium_short - premium_long) * 100)
+def spread_gain_loss(strike_price_long, premium_long, strike_price_short, premium_short, credit=True):
+    max_gain = abs((premium_short - premium_long) * 100)
+    max_loss = (abs(strike_price_long - strike_price_short) - abs(premium_short - premium_long)) * 100 
+
+    # if not credit, swap max gain w/ max loss (they are inverses of one another)
+    if(not credit):
+        temp = max_gain
+        max_gain = max_loss
+        max_loss = temp
+
+    
     return max_gain, max_loss
 
 def call_or_put_gain_loss_breakeven(strike_price, premium, call=True, short=False):
@@ -47,34 +55,31 @@ def call_or_put_gain_loss_breakeven(strike_price, premium, call=True, short=Fals
 
     return line_name, max_gain, max_loss, breakeven
 
-# set plot = True if you want to see the individual payoff for spreads
+
 def call_option(underlying_price, strike_price, premium, stock_price_range, short=False, plot=False):
-    
     profit_loss = [value - strike_price - premium if value > strike_price else 0 - premium for value in stock_price_range]
-    profit_loss = np.negative(profit_loss) if short else profit_loss
 
     if(plot):
         line_name, max_gain, max_loss, breakeven = call_or_put_gain_loss_breakeven(strike_price, premium, True, short)
         create_plot([(profit_loss, line_name)], stock_price_range, line_name, max_gain, max_loss, [breakeven])
         
-    return profit_loss
+    return np.negative(profit_loss) if short else profit_loss
 
-# set plot = True if you want to see the individual payoff for spreads
-def put_option(underlying_price, strike_price, premium, stock_price_range, short=False, plot=False):
-    
+def put_option(underlying_price, strike_price, premium, stock_price_range, short=False, plot=False): 
     profit_loss = [strike_price - value - premium if strike_price > value else 0 - premium for value in stock_price_range]
-    profit_loss = np.negative(profit_loss) if short else profit_loss
 
     if(plot):
         line_name, max_gain, max_loss, breakeven = call_or_put_gain_loss_breakeven(strike_price, premium, False, short)
         create_plot([(profit_loss, line_name)], stock_price_range, line_name, max_gain, max_loss, [breakeven])
    
-    return profit_loss 
+    return np.negative(profit_loss) if short else profit_loss
 
 
 
 # AKA - Bear Call Spread or Bull Call Spread
-def call_credit_or_debit_spread(underlying_price, strike_price_long, premium_long, strike_price_short, premium_short, stock_price_range, credit=True):
+def call_credit_or_debit_spread(underlying_price, strike_price_long, premium_long,
+                                                  strike_price_short, premium_short,
+                                                  stock_price_range, credit=True):
     net_payoff_list = []
     str_credit_or_debit = 'Call Credit Spread' if credit else 'Call Debit Spread'
 
@@ -87,17 +92,19 @@ def call_credit_or_debit_spread(underlying_price, strike_price_long, premium_lon
     call_credit_payoff = np.add(long_call_payoff, short_call_payoff) 
     net_payoff_list.append((call_credit_payoff, str_credit_or_debit))
         
-    max_gain, max_loss = spread_gains(strike_price_long, premium_long, strike_price_short, premium_short, credit)
+    max_gain, max_loss = spread_gain_loss(strike_price_long, premium_long, strike_price_short, premium_short, credit)
     breakeven = strike_price_short + premium_short - premium_long if credit else strike_price_long + premium_long - premium_short
     
     create_plot(net_payoff_list, stock_price_range, str_credit_or_debit, max_gain, max_loss, [breakeven])
 
-    return call_credit_payoff
+    return net_payoff_list
 
 
 
 # AKA Bull Put Spread or Bear Put Spread
-def put_credit_or_debit_spread(underlying_price, strike_price_long, premium_long, strike_price_short, premium_short, stock_price_range, credit=True):
+def put_credit_or_debit_spread(underlying_price, strike_price_long, premium_long,
+                                                 strike_price_short, premium_short,
+                                                 stock_price_range, credit=True):
     net_payoff_list = []
     str_credit_or_debit = 'Put Credit Spread' if credit else 'Put Debit Spread'
 
@@ -111,16 +118,18 @@ def put_credit_or_debit_spread(underlying_price, strike_price_long, premium_long
     net_payoff_list.append((put_credit_payoff, str_credit_or_debit))
 
 
-    max_gain, max_loss = spread_gains(strike_price_long, premium_long, strike_price_short, premium_short, credit)
+    max_gain, max_loss = spread_gain_loss(strike_price_long, premium_long, strike_price_short, premium_short, credit)
     breakeven = strike_price_short + premium_long - premium_short if credit else strike_price_long + premium_short - premium_long
 
     
     create_plot(net_payoff_list, stock_price_range, str_credit_or_debit, max_gain, max_loss, [breakeven])
 
 
-    return put_credit_payoff
+    return net_payoff_list
 
-def strangle_or_straddle(underlying_price, strike_price_call, premium_call, strike_price_put, premium_put, stock_price_range, short=False):
+def strangle_or_straddle(underlying_price, strike_price_call, premium_call,
+                                           strike_price_put, premium_put,
+                                           stock_price_range, short=False):
     net_payoff_list = []
     str_short_or_long_title = 'Short Strangle or Straddle' if short else 'Long Strangle or Straddle'
     str_short_or_long_call = 'Short Call' if short else 'Long Call'
@@ -167,9 +176,8 @@ def iron_condor(underlying_price, strike_price_long_put,   premium_long_put,
     iron_condor_payoff_call = np.add(long_call_payoff, short_call_payoff)
 
     iron_condor_payoff = np.add(iron_condor_payoff_put, iron_condor_payoff_call)
-    net_payoff_list.append((iron_condor_payoff, 'Iron Condor'))
+    net_payoff_list.append((iron_condor_payoff, str_short_or_long_title))
 
-    
     net_debit = (premium_long_put + premium_long_call) - (premium_short_put + premium_short_call)
     net_credit = (premium_short_put + premium_short_call) - (premium_long_put + premium_long_call)
     
@@ -188,8 +196,9 @@ def iron_condor(underlying_price, strike_price_long_put,   premium_long_put,
     
     return net_payoff_list
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
+    
     call_example()
     put_example()
 
@@ -204,11 +213,9 @@ if __name__ == "__main__":
 
     long_straddle_example()
     short_straddle_example()
-
-  
+ 
     iron_condor_long_example()
     iron_condor_short_example()
-
 
 
 
