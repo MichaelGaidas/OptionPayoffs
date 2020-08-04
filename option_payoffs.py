@@ -139,7 +139,7 @@ def strangle_or_straddle(underlying_price, strike_price_call, premium_call,
     str_short_or_long_put = 'Short Put' if short else 'Long Put'
     
 
-    long_call_payoff = call_option(underlying_price, strike_price_call, premium_call, stock_price_range, short, False) # put in a bool for long or short straddle
+    long_call_payoff = call_option(underlying_price, strike_price_call, premium_call, stock_price_range, short, False) 
     net_payoff_list.append((long_call_payoff, str_short_or_long_call))
 
     long_put_payoff = put_option(underlying_price, strike_price_put, premium_put, stock_price_range, short, False)
