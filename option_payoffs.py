@@ -55,24 +55,27 @@ def call_or_put_gain_loss_breakeven(strike_price, premium, call=True, short=Fals
 
     return line_name, max_gain, max_loss, breakeven
 
-
 def call_option(underlying_price, strike_price, premium, stock_price_range, short=False, plot=False):
     profit_loss = [value - strike_price - premium if value > strike_price else 0 - premium for value in stock_price_range]
+    profit_loss = np.negative(profit_loss) if short else profit_loss
 
     if(plot):
         line_name, max_gain, max_loss, breakeven = call_or_put_gain_loss_breakeven(strike_price, premium, True, short)
         create_plot([(profit_loss, line_name)], stock_price_range, line_name, max_gain, max_loss, [breakeven])
-        
-    return np.negative(profit_loss) if short else profit_loss
+
+    return profit_loss    
+
 
 def put_option(underlying_price, strike_price, premium, stock_price_range, short=False, plot=False): 
     profit_loss = [strike_price - value - premium if strike_price > value else 0 - premium for value in stock_price_range]
+    profit_loss = np.negative(profit_loss) if short else profit_loss            
 
     if(plot):
         line_name, max_gain, max_loss, breakeven = call_or_put_gain_loss_breakeven(strike_price, premium, False, short)
         create_plot([(profit_loss, line_name)], stock_price_range, line_name, max_gain, max_loss, [breakeven])
    
-    return np.negative(profit_loss) if short else profit_loss
+    return profit_loss
+
 
 
 
